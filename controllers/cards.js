@@ -5,7 +5,7 @@ const Card = require('../models/card');
 module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => {
-      res.send(cards);
+      res.status(200).send(cards);
     })
     .catch((err) => {
       next(err);
@@ -14,29 +14,32 @@ module.exports.getCards = (req, res, next) => {
 
 module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
-  Card.create({ name, link })
+  Card.create({ name, link, owner: req.user._id })
     .then((card) => {
-      res.send(card);
+      res.status(200).send(card);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные при создании карточки'));
-      } else {
-        next(err);
+        return;
       }
+      next(err);
     });
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  const { _id } = req.user;
-  Card.findById(_id)
+  Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (!card) {
-        next(new NotFoundError('Карточка с указанным id не найдена'));
+        throw new NotFoundError('Карточка с указанным id не найдена');
       }
-      res.send(card);
+      res.status(200).send(card);
     })
     .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Передан некорректный id карточки'));
+        return;
+      }
       next(err);
     });
 };
@@ -49,16 +52,16 @@ module.exports.likeCard = (req, res, next) => {
   )
     .then((card) => {
       if (!card) {
-        next(new NotFoundError('Передан несуществующий id карточки'));
+        throw new NotFoundError('Передан несуществующий id карточки');
       }
-      res.send(card);
+      res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         next(new BadRequestError('Переданы некорректные данные для постановки лайка'));
-      } else {
-        next(err);
+        return;
       }
+      next(err);
     });
 };
 
@@ -70,15 +73,15 @@ module.exports.dislikeCard = (req, res, next) => {
   )
     .then((card) => {
       if (!card) {
-        next(new NotFoundError('Передан несуществующий id карточки'));
+        throw new NotFoundError('Передан несуществующий id карточки');
       }
-      res.send(card);
+      res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         next(new BadRequestError('Переданы некорректные данные для снятия лайка'));
-      } else {
-        next(err);
+        return;
       }
+      next(err);
     });
 };
