@@ -1,17 +1,19 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const helmet = require('helmet');
 const NotFoundError = require('./errors/NotFoundError');
 const errorHandler = require('./errors/errorHandler');
 
-const { PORT = 3000 } = process.env;
+const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 
 const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(helmet());
 
-mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
+mongoose.connect(DB_URL);
 
 app.use((req, res, next) => {
   req.user = {

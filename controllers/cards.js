@@ -16,7 +16,7 @@ module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
     .then((card) => {
-      res.send(card);
+      res.status(201).send(card);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -29,10 +29,8 @@ module.exports.createCard = (req, res, next) => {
 
 module.exports.deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
+    .orFail(new NotFoundError('Карточка с указанным id не найдена'))
     .then((card) => {
-      if (!card) {
-        throw new NotFoundError('Карточка с указанным id не найдена');
-      }
       res.send(card);
     })
     .catch((err) => {
@@ -50,10 +48,8 @@ module.exports.likeCard = (req, res, next) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(new NotFoundError('Передан несуществующий id карточки'))
     .then((card) => {
-      if (!card) {
-        throw new NotFoundError('Передан несуществующий id карточки');
-      }
       res.send(card);
     })
     .catch((err) => {
@@ -71,10 +67,8 @@ module.exports.dislikeCard = (req, res, next) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(new NotFoundError('Передан несуществующий id карточки'))
     .then((card) => {
-      if (!card) {
-        throw new NotFoundError('Передан несуществующий id карточки');
-      }
       res.send(card);
     })
     .catch((err) => {
