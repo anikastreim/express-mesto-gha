@@ -18,14 +18,14 @@ app.use(helmet());
 
 mongoose.connect(DB_URL);
 
+app.post('/signin', login);
+app.post('/signup', createUser);
+
 app.use('/cards', require('./routes/cards'));
 app.use('/users', require('./routes/users'));
 
 app.use(errors());
 app.use(errorHandler);
-
-app.post('/signin', login);
-app.post('/signup', createUser);
 
 app.use(auth);
 
