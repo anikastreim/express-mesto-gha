@@ -30,6 +30,14 @@ const cardSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  email: {
+    type: String,
+    unique: true,
+    required: true,
+    validate: {
+      validator: (v) => isEmail(v),
+      message: 'Неправильный формат почты',
+    },
 },
 {
   versionKey: false,
