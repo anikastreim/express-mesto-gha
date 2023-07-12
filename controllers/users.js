@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
-const UnauthorizedError = require('../errors/UnauthorizedError');
+const ConflictError = require('../errors/ConflictError');
 const User = require('../models/user');
 
 module.exports.getUsers = (req, res, next) => {
@@ -43,6 +43,10 @@ module.exports.createUser = (req, res, next) => {
       res.status(201).send(user);
     })
     .catch((err) => {
+      if (err.code === 11000) {
+        next(new ConflictError('Попытка регистрации по уже существующему в базе email'));
+        return;
+      }
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные при создании пользователя'));
         return;
@@ -102,7 +106,7 @@ module.exports.login = (req, res, next) => {
         }),
       });
     })
-    .catch(() => {
-      next(new UnauthorizedError('Передан неверный логин или пароль'));
+    .catch((err) => {
+      next(err);
     });
 };

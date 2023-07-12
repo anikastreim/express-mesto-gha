@@ -2,9 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
-const NotFoundError = require('./errors/NotFoundError');
-const auth = require('./middlewares/auth');
+const { errors } = require('celebrate');
 const errorHandler = require('./middlewares/errorHandler');
+const auth = require('./middlewares/auth');
 
 const { createUser, login } = require('./controllers/users');
 
@@ -21,10 +21,7 @@ mongoose.connect(DB_URL);
 app.use('/cards', require('./routes/cards'));
 app.use('/users', require('./routes/users'));
 
-app.use((req, res, next) => {
-  next(new NotFoundError('Путь не найден'));
-});
-
+app.use(errors());
 app.use(errorHandler);
 
 app.post('/signin', login);
