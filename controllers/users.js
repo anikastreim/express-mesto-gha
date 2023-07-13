@@ -15,6 +15,22 @@ module.exports.getUsers = (req, res, next) => {
     });
 };
 
+module.exports.getCurrentUser = (req, res, next) => {
+  const { userId } = req.user._id;
+  User.findById(userId)
+    .orFail(new NotFoundError('Пользователь по указанному id не найден'))
+    .then((user) => {
+      res.send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные пользователя'));
+        return;
+      }
+      next(err);
+    });
+};
+
 module.exports.getUser = (req, res, next) => {
   const { userId } = req.params;
   User.findById(userId)
@@ -24,21 +40,6 @@ module.exports.getUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError('Переданы некорректные данные пользователя'));
-        return;
-      }
-      next(err);
-    });
-};
-
-module.exports.getCurrentUser = (req, res, next) => {
-  User.findById(req.user._id)
-    .orFail(new NotFoundError('Пользователь по указанному id не найден'))
-    .then((user) => {
-      res.send(user);
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные пользователя'));
         return;
       }
