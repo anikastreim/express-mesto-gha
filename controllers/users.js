@@ -40,7 +40,9 @@ module.exports.createUser = (req, res, next) => {
       name, about, avatar, email, password: hash
     }))
     .then((user) => {
-      res.status(201).send(user);
+      const userData = user.toObject();
+      delete userData.password;
+      res.status(201).send(userData);
     })
     .catch((err) => {
       if (err.code === 11000) {
@@ -107,6 +109,10 @@ module.exports.login = (req, res, next) => {
       });
     })
     .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные при входе в аккаунт'));
+        return;
+      }
       next(err);
     });
 };
