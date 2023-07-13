@@ -32,14 +32,13 @@ module.exports.getUser = (req, res, next) => {
 };
 
 module.exports.getCurrentUser = (req, res, next) => {
-  const { userId } = req.user._id;
-  User.findById(userId)
+  User.findById(req.user._id)
     .orFail(new NotFoundError('Пользователь по указанному id не найден'))
     .then((user) => {
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные пользователя'));
         return;
       }
