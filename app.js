@@ -4,8 +4,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 const { errors } = require('celebrate');
-const { validationSignup, validationSignin } = require('./routes/auth');
-const { createUser, login } = require('./controllers/users');
+const authRoute = require('./routes/auth');
 const auth = require('./middlewares/auth');
 const errorHandler = require('./middlewares/errorHandler');
 const NotFoundError = require('./errors/NotFoundError');
@@ -20,8 +19,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet());
 
-app.post('/signin', validationSignin, login);
-app.post('/signup', validationSignup, createUser);
+app.use(authRoute);
 
 app.use(auth);
 
