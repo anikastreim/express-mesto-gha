@@ -31,6 +31,22 @@ module.exports.getUser = (req, res, next) => {
     });
 };
 
+module.exports.getCurrentUser = (req, res, next) => {
+  const { userId } = req.user._id;
+  User.findById(userId)
+    .orFail(new NotFoundError('Пользователь по указанному id не найден'))
+    .then((user) => {
+      res.send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Переданы некорректные данные пользователя'));
+        return;
+      }
+      next(err);
+    });
+};
+
 module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password
@@ -103,16 +119,10 @@ module.exports.login = (req, res, next) => {
   return User.findUserByCredentials(email, password)
     .then((user) => {
       res.send({
-        token: jwt.sign({ _id: user._id }, 'super-strong-secret', {
-          expiresIn: '7d',
-        }),
+        token: jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' }),
       });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные при входе в аккаунт'));
-        return;
-      }
       next(err);
     });
 };

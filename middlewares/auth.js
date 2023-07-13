@@ -8,6 +8,7 @@ module.exports = (req, res, next) => {
 
   if (!authorization || !authorization.startsWith('Bearer ')) {
     next(new UnauthorizedError('Передан неверный логин или пароль'));
+    return;
   }
 
   const token = extractBearerToken(authorization);
@@ -17,6 +18,7 @@ module.exports = (req, res, next) => {
     payload = jwt.verify(token, 'super-strong-secret');
   } catch (err) {
     next(new UnauthorizedError('Передан неверный логин или пароль'));
+    return;
   }
 
   req.user = payload;
