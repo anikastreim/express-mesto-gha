@@ -40,8 +40,9 @@ module.exports.deleteCard = (req, res, next) => {
           .catch((err) => {
             next(err);
           });
+      } else {
+        next(new ForbiddenError('Попытка удалить чужую карточку'));
       }
-      next(new ForbiddenError('Попытка удалить чужую карточку'));
     })
     .catch((err) => {
       if (err.name === 'CastError') {
