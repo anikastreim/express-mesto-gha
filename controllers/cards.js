@@ -29,14 +29,20 @@ module.exports.createCard = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
     .orFail(new NotFoundError('Карточка с указанным id не найдена'))
     .then((card) => {
-      if (req.user._id !== card.owner.toString()) {
+      if (req.user._id === card.owner.toString()) {
+        card.remove()
+          .then(() => {
+            res.send(card);
+          })
+          .catch((err) => {
+            next(err);
+          });
+      } else {
         next(new ForbiddenError('Попытка удалить чужую карточку'));
-        return;
       }
-      res.send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
